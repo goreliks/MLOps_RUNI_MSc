@@ -12,7 +12,6 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
         self.estimator = estimator
         self.feature_indices_ = None
         self.beta = beta
-        self.feature_names_ = None
 
     def fit(self, X, y=None):
         # Perform SHAP analysis
@@ -27,13 +26,16 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
             shap_cm_df['recall'], shap_cm_df['precision'], shap_cm_df['f_beta'] = \
                 (zip(*shap_cm_df.apply(lambda row: self.get_f_beta_score(
                     row['TP'], row['FP'], row['TN'], row['FN'], beta=self.beta), axis=1)))
-            self.feature_names_ = list(shap_cm_df[shap_cm_df.f_beta > 1-self.importance].index)
+            mask = shap_cm_df['f_beta'] > 1-self.importance
+            numeric_indexes = mask[mask].index.tolist()
+            self.feature_indices_ = [shap_cm_df.index.get_loc(index) for index in numeric_indexes]
         return self
 
     def transform(self, X):
-        if not self.beta:
+        if isinstance(X, pd.DataFrame):
             return X.iloc[:, self.feature_indices_]
-        return X[self.feature_names_]
+        else:
+            return X[:, self.feature_indices_]
 
     @staticmethod
     def get_f_beta_score(TP, FP, TN, FN, beta=0.5):
@@ -45,9 +47,9 @@ class SHAPFeatureSelector(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def create_shap_cm_df(x, y=None, shap_values=None):
-        positive_mask = np.array(y) > 0
-        negative_mask = np.array(y) < 1
-        shap_df = pd.DataFrame(shap_values[1], columns=list(x.columns))
+        positive_mask = np.array(y) == 1
+        negative_mask = np.array(y) == 0
+        shap_df = pd.DataFrame(shap_values[1])
         TP_ser = (shap_df[positive_mask].clip(lower=0) > 0).sum()
         FP_ser = (shap_df[negative_mask].clip(lower=0) > 0).sum()
         TN_ser = (shap_df[negative_mask].clip(upper=0) < 0).sum()
