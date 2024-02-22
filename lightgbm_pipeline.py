@@ -53,7 +53,7 @@ def load_and_split_data(directory, train_proportion=0.7,
     return x_train, y_train, x_valid, y_valid, x_test, y_test
 
 
-def lgb_train_predict(x_train, y_train, x_valid, y_valid, x_test, y_test, beta=0.5):
+def lgb_train_predict(x_train, y_train, x_valid, y_valid, x_test, y_test, beta=1):
 
     # fix random seed
     tf.random.set_seed(0)
@@ -90,6 +90,28 @@ def lgb_train_predict(x_train, y_train, x_valid, y_valid, x_test, y_test, beta=0
     return test_acc, test_f1score, test_cm, test_pred, model_lgb, test_f_beta_score
 
 
+def print_out_results(test_acc, test_f1score, test_f_beta_score, test_cm, improved=False):
+    tn, fp, fn, tp = test_cm.ravel()
+
+    recall = tp / (tp + fn)
+    precision = tp / (tp + fp)
+
+    pipe_type = 'BASELINE'
+    if improved:
+        pipe_type = 'IMPROVED'
+
+    print("******************************")
+    print(f"{pipe_type} PIPELINE PERFORMANCE:")
+    print("******************************")
+    print(f'TEST ACCURACY: {test_acc:.3f}')
+    print(f'TEST PRECISION: {precision:.3f}')
+    print(f'TEST RECALL: {recall:.3f}')
+    print(f'TEST F1 SCORE: {test_f1score:.3f}')
+    print(f'TEST F_BETA SCORE: {test_f_beta_score:.3f}')
+    print('TEST CONFUSION MATRIX:')
+    print(test_cm)
+
+
 if __name__ == '__main__':
     x_train, y_train, x_valid, y_valid, x_test, y_test = load_and_split_data(DATA_PATH)
 
@@ -112,14 +134,7 @@ if __name__ == '__main__':
                                                                                                  test_x, test_y,
                                                                                                  beta=F_SCORE_BETA)
     if not IMPROVEMENT_PIPELINE:
-        print("******************************")
-        print("BASELINE PIPELINE PERFORMANCE:")
-        print("******************************")
-        print(f'TEST ACCURACY: {test_acc:.3f}')
-        print(f'TEST F1 SCORE: {test_f1score:.3f}')
-        print(f'TEST F_BETA SCORE: {test_f_beta_score:.3f}')
-        print('TEST CONFUSION MATRIX:')
-        print(test_cm)
+        print_out_results(test_acc, test_f1score, test_f_beta_score, test_cm)
     else:
         shap_feature_selector_f_beta = SHAPFeatureSelector(importance=FEATURE_IMPORTANCE,
                                                            estimator=model_lgb, beta=F_SCORE_BETA)
@@ -131,15 +146,5 @@ if __name__ == '__main__':
             lgb_train_predict(train_x_imp_beta, train_y, valid_x_imp_beta,
                               valid_y, test_x_imp_beta, test_y, beta=F_SCORE_BETA))
 
-        print("******************************")
-        print("IMPROVED PIPELINE PERFORMANCE:")
-        print("******************************")
-        print(f'TEST ACCURACY: {test_acc_imp:.3f}')
-        print(f'TEST F1 SCORE: {test_f1score_imp:.3f}')
-        print(f'TEST F_BETA SCORE: {test_f_beta_score_imp:.3f}')
-        print('TEST CONFUSION MATRIX:')
-        print(test_cm_imp)
-
-
-
-
+        print_out_results(test_acc_imp, test_f1score_imp, test_f_beta_score_imp, test_cm_imp,
+                          improved=IMPROVEMENT_PIPELINE)
