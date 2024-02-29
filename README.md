@@ -4,6 +4,14 @@ This repository contains code for a machine learning project focused on anomaly 
 
 ## Repository Overview
 
+- `reports`: Reports and Presentation
+  - `MLOps_Midterm_Project.pdf`: The fixed mid-term exercise
+  - `Baseline.pdf`: Baseline report for one of the baseline models.
+  - `final_model_report.pdf`: Model report including the target metric comparison to the relevant baseline model
+  - `exit_report.pdf`: Final Report
+  - `MLOps_AquaFlow_project.pdf`: Presentation
+
+
 - `algorithms`: Contains algorithm implementations.
   - `MSET.py`: Python implementation of the Multivariate State Estimation Technique (MSET).
 
