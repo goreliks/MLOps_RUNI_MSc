@@ -6,7 +6,7 @@ This repository contains code for a machine learning project focused on anomaly 
 
 - `reports`: Reports and Presentation
   - `MLOps_Midterm_Project.pdf`: The fixed mid-term exercise
-  - `Baseline.pdf`: Baseline report for one of the baseline models.
+  - `baseline.pdf`: Baseline report for one of the baseline models.
   - `final_model_report.pdf`: Model report including the target metric comparison to the relevant baseline model
   - `exit_report.pdf`: Final Report
   - `MLOps_AquaFlow_project.pdf`: Presentation
